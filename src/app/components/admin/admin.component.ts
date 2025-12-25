@@ -76,21 +76,29 @@ export class AdminComponent implements OnInit {
         }
     }
 
-    updateOrderStatus(orderId: string, status: OrderStatus): void {
-        this.orderService.updateOrderStatus(orderId, status);
+    async updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
+        try {
+            await this.orderService.updateOrderStatus(orderId, status);
+        } catch (error) {
+            console.error('Error updating order status:', error);
+        }
     }
 
-    openWhatsApp(order: Order): void {
+    async openWhatsApp(order: Order): Promise<void> {
         const url = this.orderService.getWhatsAppUrl(order);
         // Update status to whatsapp_sent
-        this.orderService.updateOrderStatus(order.id, OrderStatus.WHATSAPP_SENT);
+        await this.orderService.updateOrderStatus(order.id, OrderStatus.WHATSAPP_SENT);
         // Open WhatsApp
         window.open(url, '_blank');
     }
 
-    deleteOrder(orderId: string): void {
+    async deleteOrder(orderId: string): Promise<void> {
         if (confirm('Are you sure you want to delete this order?')) {
-            this.orderService.deleteOrder(orderId);
+            try {
+                await this.orderService.deleteOrder(orderId);
+            } catch (error) {
+                console.error('Error deleting order:', error);
+            }
         }
     }
 
@@ -128,18 +136,28 @@ export class AdminComponent implements OnInit {
         this.selectedFileName = '';
     }
 
-    saveProduct(): void {
-        if (this.editingProduct) {
-            this.productService.updateProduct(this.productForm);
-        } else {
-            this.productService.addProduct(this.productForm);
+    async saveProduct(): Promise<void> {
+        try {
+            if (this.editingProduct) {
+                await this.productService.updateProduct(this.productForm);
+            } else {
+                await this.productService.addProduct(this.productForm);
+            }
+            this.closeProductModal();
+        } catch (error) {
+            console.error('Error saving product:', error);
+            alert('Error saving product. Please try again.');
         }
-        this.closeProductModal();
     }
 
-    deleteProduct(id: string): void {
+    async deleteProduct(id: string): Promise<void> {
         if (confirm('Are you sure you want to delete this product?')) {
-            this.productService.deleteProduct(id);
+            try {
+                await this.productService.deleteProduct(id);
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                alert('Error deleting product.');
+            }
         }
     }
 

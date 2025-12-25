@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Order, CartItem, OrderStatus } from '../models/models';
-import { StorageService } from './storage.service';
+import { Firestore, collection, collectionData, doc, setDoc, updateDoc, deleteDoc, query, orderBy } from '@angular/fire/firestore';
 import { ProductService } from './product.service';
 import { CustomerService } from './customer.service';
 
@@ -9,12 +9,13 @@ import { CustomerService } from './customer.service';
     providedIn: 'root'
 })
 export class OrderService {
-    private readonly ORDERS_KEY = 'wholesale_orders';
+    private firestore: Firestore = inject(Firestore);
+    private ordersCollection = collection(this.firestore, 'orders');
+
     private ordersSubject = new BehaviorSubject<Order[]>([]);
     public orders$ = this.ordersSubject.asObservable();
 
     constructor(
-        private storageService: StorageService,
         private productService: ProductService,
         private customerService: CustomerService
     ) {
@@ -22,12 +23,16 @@ export class OrderService {
     }
 
     private loadOrders(): void {
-        const orders = this.storageService.getItem<Order[]>(this.ORDERS_KEY) || [];
-        // Convert date strings back to Date objects
-        orders.forEach(order => {
-            order.orderDate = new Date(order.orderDate);
+        // Load orders ordered by date descending
+        const q = query(this.ordersCollection, orderBy('orderDate', 'desc'));
+
+        (collectionData(q, { idField: 'id' }) as Observable<Order[]>).subscribe(orders => {
+            const processedOrders = orders.map(order => ({
+                ...order,
+                orderDate: (order.orderDate as any).toDate ? (order.orderDate as any).toDate() : new Date(order.orderDate)
+            }));
+            this.ordersSubject.next(processedOrders);
         });
-        this.ordersSubject.next(orders);
     }
 
     getOrders(): Order[] {
@@ -38,15 +43,16 @@ export class OrderService {
         return this.ordersSubject.value.find(o => o.id === id);
     }
 
-    createOrder(
+    async createOrder(
         customerName: string,
         customerPhone: string,
         customerAddress: string,
         items: CartItem[],
         totalAmount: number
-    ): Order {
+    ): Promise<Order> {
+        const orderId = 'ORD-' + Date.now();
         const order: Order = {
-            id: 'ORD-' + Date.now(),
+            id: orderId,
             customerName,
             customerPhone,
             customerAddress,
@@ -56,36 +62,34 @@ export class OrderService {
             orderDate: new Date()
         };
 
-        const orders = this.getOrders();
-        orders.unshift(order); // Add to beginning  
-        this.saveOrders(orders);
+        // Save to Firestore
+        await setDoc(doc(this.firestore, 'orders', orderId), order);
 
         // Update Customer Record
-        this.customerService.updateCustomerFromOrder(order);
+        await this.customerService.updateCustomerFromOrder(order);
 
         return order;
     }
 
-    updateOrderStatus(orderId: string, status: OrderStatus): void {
-        const orders = this.getOrders();
-        const order = orders.find(o => o.id === orderId);
+    async updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
+        const order = this.getOrderById(orderId);
 
         if (order) {
             // If confirming order, reduce stock
             if (status === OrderStatus.CONFIRMED && order.status !== OrderStatus.CONFIRMED) {
-                order.items.forEach(item => {
-                    this.productService.updateStock(item.product.id, item.quantity);
-                });
+                for (const item of order.items) {
+                    await this.productService.updateStock(item.product.id, item.quantity);
+                }
             }
 
-            order.status = status;
-            this.saveOrders(orders);
+            const orderDoc = doc(this.firestore, `orders/${orderId}`);
+            await updateDoc(orderDoc, { status });
         }
     }
 
-    deleteOrder(orderId: string): void {
-        const orders = this.getOrders().filter(o => o.id !== orderId);
-        this.saveOrders(orders);
+    deleteOrder(orderId: string): Promise<void> {
+        const orderDoc = doc(this.firestore, `orders/${orderId}`);
+        return deleteDoc(orderDoc);
     }
 
     // Generate WhatsApp message for order confirmation
@@ -119,10 +123,5 @@ export class OrderService {
         }
 
         return `https://wa.me/${formattedPhone}?text=${message}`;
-    }
-
-    private saveOrders(orders: Order[]): void {
-        this.storageService.setItem(this.ORDERS_KEY, orders);
-        this.ordersSubject.next(orders);
     }
 }

@@ -36,25 +36,30 @@ export class CheckoutComponent implements OnInit {
         }
     }
 
-    placeOrder(): void {
+    async placeOrder(): Promise<void> {
         if (!this.customerName || !this.customerPhone || !this.customerAddress) {
             alert('Please fill in all fields');
             return;
         }
 
-        const order = this.orderService.createOrder(
-            this.customerName,
-            this.customerPhone,
-            this.customerAddress,
-            this.cartItems,
-            this.totalAmount
-        );
+        try {
+            const order = await this.orderService.createOrder(
+                this.customerName,
+                this.customerPhone,
+                this.customerAddress,
+                this.cartItems,
+                this.totalAmount
+            );
 
-        this.cartService.clearCart();
+            this.cartService.clearCart();
 
-        alert(`Order placed successfully!\nOrder ID: ${order.id}\n\nWe will contact you soon on WhatsApp to confirm your order.`);
+            alert(`Order placed successfully!\nOrder ID: ${order.id}\n\nWe will contact you soon on WhatsApp to confirm your order.`);
 
-        this.router.navigate(['/']);
+            this.router.navigate(['/']);
+        } catch (error) {
+            console.error('Error placing order:', error);
+            alert('Failed to place order. Please try again.');
+        }
     }
 
     goBack(): void {

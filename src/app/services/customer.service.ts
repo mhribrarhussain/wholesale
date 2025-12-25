@@ -1,29 +1,31 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Customer, Order } from '../models/models';
-import { StorageService } from './storage.service';
+import { Firestore, collection, collectionData, doc, setDoc, updateDoc, query, where } from '@angular/fire/firestore';
 
 @Injectable({
     providedIn: 'root'
 })
 export class CustomerService {
-    private readonly CUSTOMERS_KEY = 'wholesale_customers';
+    private firestore: Firestore = inject(Firestore);
+    private customersCollection = collection(this.firestore, 'customers');
+
     private customersSubject = new BehaviorSubject<Customer[]>([]);
     public customers$ = this.customersSubject.asObservable();
 
-    constructor(private storageService: StorageService) {
+    constructor() {
         this.loadCustomers();
     }
 
     private loadCustomers(): void {
-        const customers = this.storageService.getItem<Customer[]>(this.CUSTOMERS_KEY) || [];
-        // Convert date strings back to Date objects
-        customers.forEach(customer => {
-            if (customer.lastOrderDate) {
-                customer.lastOrderDate = new Date(customer.lastOrderDate);
-            }
+        (collectionData(this.customersCollection, { idField: 'id' }) as Observable<Customer[]>).subscribe(customers => {
+            // Convert timestamps if necessary
+            const processedCustomers = customers.map(c => ({
+                ...c,
+                lastOrderDate: c.lastOrderDate ? (c.lastOrderDate as any).toDate ? (c.lastOrderDate as any).toDate() : new Date(c.lastOrderDate) : new Date()
+            }));
+            this.customersSubject.next(processedCustomers);
         });
-        this.customersSubject.next(customers);
     }
 
     getCustomers(): Customer[] {
@@ -31,25 +33,25 @@ export class CustomerService {
     }
 
     // Called when a new order is created to update customer data
-    updateCustomerFromOrder(order: Order): void {
+    async updateCustomerFromOrder(order: Order): Promise<void> {
         const customers = this.getCustomers();
-
-        // Try to find existing customer by phone number (primary identifier)
         let customer = customers.find(c => c.phone === order.customerPhone);
 
         if (customer) {
             // Update existing customer
-            customer.name = order.customerName; // Update name in case of correction
-            customer.address = order.customerAddress; // Update address to latest
-            customer.totalOrders += 1;
-            customer.totalSpent += order.totalAmount;
-            customer.lastOrderDate = new Date();
-            if (!customer.orders) customer.orders = [];
-            customer.orders.push(order.id);
+            const customerDoc = doc(this.firestore, `customers/${customer.id}`);
+            await updateDoc(customerDoc, {
+                name: order.customerName,
+                address: order.customerAddress,
+                totalOrders: (customer.totalOrders || 0) + 1,
+                totalSpent: (customer.totalSpent || 0) + order.totalAmount,
+                lastOrderDate: new Date(),
+                orders: [...(customer.orders || []), order.id]
+            });
         } else {
             // Create new customer
-            customer = {
-                id: 'CUST-' + Date.now(),
+            const newId = 'CUST-' + Date.now();
+            const newCustomer: any = {
                 name: order.customerName,
                 phone: order.customerPhone,
                 address: order.customerAddress,
@@ -58,14 +60,9 @@ export class CustomerService {
                 lastOrderDate: new Date(),
                 orders: [order.id]
             };
-            customers.push(customer);
+
+            // Use setDoc to define custom ID or let Firestore generate one
+            await setDoc(doc(this.firestore, 'customers', newId), newCustomer);
         }
-
-        this.saveCustomers(customers);
-    }
-
-    private saveCustomers(customers: Customer[]): void {
-        this.storageService.setItem(this.CUSTOMERS_KEY, customers);
-        this.customersSubject.next(customers);
     }
 }
