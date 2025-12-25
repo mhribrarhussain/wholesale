@@ -138,15 +138,17 @@ export class AdminComponent implements OnInit {
 
     async saveProduct(): Promise<void> {
         try {
+            console.log('Attempting to save product...', this.productForm);
             if (this.editingProduct) {
                 await this.productService.updateProduct(this.productForm);
             } else {
                 await this.productService.addProduct(this.productForm);
             }
+            console.log('Product saved successfully');
             this.closeProductModal();
         } catch (error) {
-            console.error('Error saving product:', error);
-            alert('Error saving product. Please try again.');
+            console.error('FULL ERROR DETAILS:', error);
+            alert(`Error saving product: ${JSON.stringify(error)}`);
         }
     }
 
@@ -179,28 +181,57 @@ export class AdminComponent implements OnInit {
         if (input.files && input.files[0]) {
             const file = input.files[0];
 
-            // Validate file type
             if (!file.type.startsWith('image/')) {
                 alert('Please select an image file');
                 return;
             }
 
-            // Validate file size (max 2MB)
-            if (file.size > 2 * 1024 * 1024) {
-                alert('Image size must be less than 2MB');
-                return;
-            }
-
             this.selectedFileName = file.name;
 
-            // Convert to base64
+            // Compress Image
             const reader = new FileReader();
-            reader.onload = (e: ProgressEvent<FileReader>) => {
-                if (e.target && e.target.result) {
-                    this.productForm.image = e.target.result as string;
-                }
-            };
             reader.readAsDataURL(file);
+            reader.onload = (event: any) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Max dimensions
+                    const MAX_WIDTH = 800;
+                    const MAX_HEIGHT = 800;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG with 0.7 quality
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                    // Check size check (approximate base64 size)
+                    if (dataUrl.length > 1000000) { // ~750KB limit to be safe for 1MB doc
+                        alert('Image is too complex/large even after compression. Please choose a simpler image.');
+                        return;
+                    }
+
+                    this.productForm.image = dataUrl;
+                };
+            };
         }
     }
 
