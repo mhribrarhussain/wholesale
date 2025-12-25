@@ -38,6 +38,8 @@ export class AdminComponent implements OnInit {
         description: ''
     };
 
+    selectedFileName: string = '';
+
     constructor(
         private productService: ProductService,
         private orderService: OrderService,
@@ -121,6 +123,7 @@ export class AdminComponent implements OnInit {
     closeProductModal(): void {
         this.showProductModal = false;
         this.editingProduct = null;
+        this.selectedFileName = '';
     }
 
     saveProduct(): void {
@@ -145,5 +148,40 @@ export class AdminComponent implements OnInit {
     logout(): void {
         this.authService.logout();
         this.router.navigate(['/login']);
+    }
+
+    onImageSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            // Validate file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Image size must be less than 2MB');
+                return;
+            }
+
+            this.selectedFileName = file.name;
+
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onload = (e: ProgressEvent<FileReader>) => {
+                if (e.target && e.target.result) {
+                    this.productForm.image = e.target.result as string;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    removeImage(): void {
+        this.productForm.image = '';
+        this.selectedFileName = '';
     }
 }
