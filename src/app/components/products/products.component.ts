@@ -95,7 +95,7 @@ export class ProductsComponent implements OnInit {
     }
 
     goToAdmin(): void {
-        this.router.navigate(['/admin']);
+        this.router.navigate(['/login']);
     }
 
     private showSuccess(message: string): void {

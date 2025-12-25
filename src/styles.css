@@ -241,6 +241,14 @@ select:focus {
     padding: 20px 0;
 }
 
+/* Mobile: Single column for consistency */
+@media (max-width: 768px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+
 .product-card {
     background: var(--white);
     border-radius: 12px;
@@ -836,11 +844,6 @@ select:focus {
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-    .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 15px;
-    }
-
     .product-image {
         height: 150px;
     }

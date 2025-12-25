@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { OrderService } from '../../services/order.service';
+import { AuthService } from '../../services/auth.service';
 import { Product, Order, OrderStatus } from '../../models/models';
 
 @Component({
@@ -40,6 +41,7 @@ export class AdminComponent implements OnInit {
     constructor(
         private productService: ProductService,
         private orderService: OrderService,
+        private authService: AuthService,
         private router: Router
     ) { }
 
@@ -138,5 +140,10 @@ export class AdminComponent implements OnInit {
 
     exitAdmin(): void {
         this.router.navigate(['/']);
+    }
+
+    logout(): void {
+        this.authService.logout();
+        this.router.navigate(['/login']);
     }
 }

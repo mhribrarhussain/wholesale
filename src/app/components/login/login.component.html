@@ -1,0 +1,50 @@
+<div class="login-view">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-lock"></i>
+                <h1>Admin Login</h1>
+                <p>Wholesale Inventory System</p>
+            </div>
+
+            <form (ngSubmit)="login()" class="login-form">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <input type="text" id="username" [(ngModel)]="username" name="username" placeholder="Enter username"
+                        required autocomplete="username" />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-key"></i> Password
+                    </label>
+                    <div class="password-input-wrapper">
+                        <input [type]="showPassword ? 'text' : 'password'" id="password" [(ngModel)]="password"
+                            name="password" placeholder="Enter password" required autocomplete="current-password" />
+                        <button type="button" class="password-toggle" (click)="togglePasswordVisibility()">
+                            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="error-message" *ngIf="errorMessage">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ errorMessage }}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-large">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+
+                <div class="login-help">
+                    <p class="hint">
+                        <i class="fas fa-info-circle"></i>
+                        Default credentials: <strong>admin</strong> / <strong>admin123</strong>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
