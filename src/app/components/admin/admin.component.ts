@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { OrderService } from '../../services/order.service';
 import { AuthService } from '../../services/auth.service';
+import { InvoiceService } from '../../services/invoice.service';
 import { Product, Order, OrderStatus } from '../../models/models';
 
 @Component({
@@ -44,6 +45,7 @@ export class AdminComponent implements OnInit {
         private productService: ProductService,
         private orderService: OrderService,
         private authService: AuthService,
+        private invoiceService: InvoiceService,
         private router: Router
     ) { }
 
@@ -143,6 +145,10 @@ export class AdminComponent implements OnInit {
 
     exitAdmin(): void {
         this.router.navigate(['/']);
+    }
+
+    downloadInvoice(order: Order): void {
+        this.invoiceService.generateInvoice(order);
     }
 
     logout(): void {

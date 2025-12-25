@@ -5,9 +5,14 @@
                 <i class="fas fa-arrow-left"></i> Exit Admin
             </button>
             <h1><i class="fas fa-user-shield"></i> Admin Panel</h1>
-            <button class="back-btn" (click)="logout()">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </button>
+            <div class="header-actions">
+                <a routerLink="/admin/customers" class="back-btn" style="margin-right: 10px; text-decoration: none;">
+                    <i class="fas fa-users"></i> Customers
+                </a>
+                <button class="back-btn" (click)="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
         </div>
     </header>
 
@@ -88,6 +93,11 @@
                     <button class="btn btn-primary" (click)="updateOrderStatus(order.id, OrderStatus.DELIVERED)"
                         *ngIf="order.status === 'confirmed'">
                         <i class="fas fa-truck"></i> Mark as Delivered
+                    </button>
+
+                    <button class="btn btn-secondary" (click)="downloadInvoice(order)"
+                        style="background: #6b7280; color: white;">
+                        <i class="fas fa-file-invoice"></i> Invoice
                     </button>
 
                     <button class="btn btn-danger" (click)="deleteOrder(order.id)">

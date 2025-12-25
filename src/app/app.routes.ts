@@ -12,5 +12,6 @@ export const routes: Routes = [
     { path: 'checkout', component: CheckoutComponent },
     { path: 'login', component: LoginComponent },
     { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
+    { path: 'admin/customers', loadComponent: () => import('./components/customers/customers.component').then(m => m.CustomersComponent), canActivate: [authGuard] },
     { path: '**', redirectTo: '' }
 ];

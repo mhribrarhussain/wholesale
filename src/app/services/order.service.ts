@@ -3,6 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Order, CartItem, OrderStatus } from '../models/models';
 import { StorageService } from './storage.service';
 import { ProductService } from './product.service';
+import { CustomerService } from './customer.service';
 
 @Injectable({
     providedIn: 'root'
@@ -14,7 +15,8 @@ export class OrderService {
 
     constructor(
         private storageService: StorageService,
-        private productService: ProductService
+        private productService: ProductService,
+        private customerService: CustomerService
     ) {
         this.loadOrders();
     }
@@ -57,6 +59,9 @@ export class OrderService {
         const orders = this.getOrders();
         orders.unshift(order); // Add to beginning  
         this.saveOrders(orders);
+
+        // Update Customer Record
+        this.customerService.updateCustomerFromOrder(order);
 
         return order;
     }

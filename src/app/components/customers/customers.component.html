@@ -1,0 +1,35 @@
+<div class="customers-view">
+    <div class="container">
+        <h2><i class="fas fa-users"></i> Customer Management</h2>
+
+        <div class="customers-grid">
+            <div class="customer-card" *ngFor="let customer of customers">
+                <div class="customer-header">
+                    <h3>{{ customer.name }}</h3>
+                    <span class="customer-phone"><i class="fas fa-phone"></i> {{ customer.phone }}</span>
+                </div>
+                <div class="customer-details">
+                    <p><i class="fas fa-map-marker-alt"></i> {{ customer.address }}</p>
+                    <div class="customer-stats">
+                        <div class="stat">
+                            <span class="label">Orders</span>
+                            <span class="value">{{ customer.totalOrders }}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="label">Total Spent</span>
+                            <span class="value">Rs. {{ customer.totalSpent | number }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="customer-footer">
+                    <small>Last Order: {{ customer.lastOrderDate | date:'mediumDate' }}</small>
+                </div>
+            </div>
+
+            <div class="empty-state" *ngIf="customers.length === 0">
+                <i class="fas fa-user-friends"></i>
+                <p>No customers found yet.</p>
+            </div>
+        </div>
+    </div>
+</div>

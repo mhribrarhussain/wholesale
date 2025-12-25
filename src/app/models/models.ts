@@ -30,3 +30,14 @@ export enum OrderStatus {
   CONFIRMED = 'confirmed',
   DELIVERED = 'delivered'
 }
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderDate: Date;
+  orders?: string[];
+}
