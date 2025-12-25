@@ -1,0 +1,79 @@
+<div class="products-view">
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1><i class="fas fa-store"></i> Wholesale Store</h1>
+            <button class="cart-btn" (click)="viewCart()">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">{{ cartCount }}</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Search & Filter -->
+    <div class="search-section">
+        <div class="container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="searchProducts()"
+                    placeholder="Search products..." />
+            </div>
+            <select [(ngModel)]="selectedCategory" (ngModelChange)="filterProducts()">
+                <option value="all">All Categories</option>
+                <option *ngFor="let category of categories" [value]="category">
+                    {{ category }}
+                </option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="container">
+        <div class="products-grid">
+            <div class="product-card" *ngFor="let product of filteredProducts">
+                <img [src]="product.image" [alt]="product.name" class="product-image" />
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-category">{{ product.category }}</p>
+                    <p class="product-description">{{ product.description }}</p>
+                    <p class="product-price">Rs. {{ product.price }}</p>
+                    <p class="product-stock" [class.low-stock]="product.stock < 20"
+                        [class.out-of-stock]="product.stock === 0">
+                        <i class="fas fa-box"></i>
+                        {{ product.stock > 0 ? 'Stock: ' + product.stock : 'Out of Stock' }}
+                    </p>
+
+                    <ng-container *ngIf="product.stock > 0">
+                        <div class="quantity-selector">
+                            <button class="qty-btn" (click)="adjustQuantity(qty, -1, product.stock)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" #qty value="1" min="1" [max]="product.stock" class="qty-input" />
+                            <button class="qty-btn" (click)="adjustQuantity(qty, 1, product.stock)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+
+                        <button class="btn btn-primary btn-block"
+                            (click)="addToCart(product, +qty.value); qty.value = '1'">
+                            <i class="fas fa-cart-plus"></i> Add to Cart
+                        </button>
+                    </ng-container>
+                    <button class="btn btn-disabled btn-block" *ngIf="product.stock === 0" disabled>
+                        Out of Stock
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty-state" *ngIf="filteredProducts.length === 0">
+            <i class="fas fa-box-open"></i>
+            <p>No products found</p>
+        </div>
+    </div>
+
+    <!-- Admin Access Button -->
+    <button class="admin-access-btn" (click)="goToAdmin()">
+        <i class="fas fa-lock"></i> Admin
+    </button>
+</div>

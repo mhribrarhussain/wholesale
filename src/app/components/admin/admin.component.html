@@ -1,0 +1,172 @@
+<div class="admin-view">
+    <header class="header header-admin">
+        <div class="container">
+            <button class="back-btn" (click)="exitAdmin()">
+                <i class="fas fa-arrow-left"></i> Exit Admin
+            </button>
+            <h1><i class="fas fa-user-shield"></i> Admin Panel</h1>
+        </div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+        <button class="tab-btn" [class.active]="activeTab === 'orders'" (click)="switchTab('orders')">
+            <i class="fas fa-shopping-bag"></i> Orders
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'products'" (click)="switchTab('products')">
+            <i class="fas fa-box"></i> Products
+        </button>
+    </div>
+
+    <!-- Orders Tab -->
+    <div class="admin-tab" [class.active]="activeTab === 'orders'">
+        <div class="container">
+            <div class="filter-buttons">
+                <button class="filter-btn" [class.active]="selectedOrderFilter === 'all'"
+                    (click)="selectedOrderFilter = 'all'; filterOrders()">
+                    All
+                </button>
+                <button class="filter-btn" [class.active]="selectedOrderFilter === 'pending'"
+                    (click)="selectedOrderFilter = 'pending'; filterOrders()">
+                    Pending
+                </button>
+                <button class="filter-btn" [class.active]="selectedOrderFilter === 'whatsapp_sent'"
+                    (click)="selectedOrderFilter = 'whatsapp_sent'; filterOrders()">
+                    WhatsApp Sent
+                </button>
+                <button class="filter-btn" [class.active]="selectedOrderFilter === 'confirmed'"
+                    (click)="selectedOrderFilter = 'confirmed'; filterOrders()">
+                    Confirmed
+                </button>
+                <button class="filter-btn" [class.active]="selectedOrderFilter === 'delivered'"
+                    (click)="selectedOrderFilter = 'delivered'; filterOrders()">
+                    Delivered
+                </button>
+            </div>
+
+            <div class="order-card" *ngFor="let order of filteredOrders">
+                <div class="order-header">
+                    <span class="order-id">#{{ order.id }}</span>
+                    <span class="order-status" [ngClass]="getStatusClass(order.status)">
+                        {{ getStatusLabel(order.status) }}
+                    </span>
+                </div>
+
+                <div class="order-customer">
+                    <p><i class="fas fa-user"></i> <strong>{{ order.customerName }}</strong></p>
+                    <p><i class="fas fa-phone"></i> {{ order.customerPhone }}</p>
+                    <p><i class="fas fa-map-marker-alt"></i> {{ order.customerAddress }}</p>
+                    <p><i class="fas fa-calendar"></i> {{ order.orderDate | date: 'medium' }}</p>
+                </div>
+
+                <div class="order-items">
+                    <h4>Order Items:</h4>
+                    <div class="order-item" *ngFor="let item of order.items">
+                        <span>{{ item.product.name }}</span>
+                        <span>{{ item.quantity }} x Rs.{{ item.product.price }} = Rs.{{ item.quantity *
+                            item.product.price }}</span>
+                    </div>
+                </div>
+
+                <div class="order-total">
+                    <strong>Total: Rs. {{ order.totalAmount }}</strong>
+                </div>
+
+                <div class="order-actions">
+                    <button class="whatsapp-btn" (click)="openWhatsApp(order)" *ngIf="order.status === 'pending'">
+                        <i class="fab fa-whatsapp"></i> Confirm on WhatsApp
+                    </button>
+
+                    <button class="btn btn-success" (click)="updateOrderStatus(order.id, OrderStatus.CONFIRMED)"
+                        *ngIf="order.status === 'whatsapp_sent'">
+                        <i class="fas fa-check"></i> Mark as Confirmed
+                    </button>
+
+                    <button class="btn btn-primary" (click)="updateOrderStatus(order.id, OrderStatus.DELIVERED)"
+                        *ngIf="order.status === 'confirmed'">
+                        <i class="fas fa-truck"></i> Mark as Delivered
+                    </button>
+
+                    <button class="btn btn-danger" (click)="deleteOrder(order.id)">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+
+            <div class="empty-state" *ngIf="filteredOrders.length === 0">
+                <i class="fas fa-clipboard-list"></i>
+                <p>No orders found</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Tab -->
+    <div class="admin-tab" [class.active]="activeTab === 'products'">
+        <div class="container">
+            <button class="btn btn-primary add-btn" (click)="openProductModal()">
+                <i class="fas fa-plus"></i> Add Product
+            </button>
+
+            <div class="products-admin-grid">
+                <div class="product-admin-card" *ngFor="let product of products">
+                    <img [src]="product.image" [alt]="product.name" class="product-admin-image" />
+                    <div class="product-admin-info">
+                        <h3>{{ product.name }}</h3>
+                        <p class="category">{{ product.category }}</p>
+                        <p class="price">Rs. {{ product.price }}</p>
+                        <p class="stock">Stock: {{ product.stock }}</p>
+                    </div>
+                    <div class="product-admin-actions">
+                        <button class="btn btn-primary btn-sm" (click)="openProductModal(product)">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="deleteProduct(product.id)">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" [class.active]="showProductModal" (click)="closeProductModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>{{ editingProduct ? 'Edit Product' : 'Add Product' }}</h2>
+                <button class="close-btn" (click)="closeProductModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form (ngSubmit)="saveProduct()" class="product-form">
+                <div class="form-group">
+                    <label>Product Name *</label>
+                    <input type="text" [(ngModel)]="productForm.name" name="name" required />
+                </div>
+                <div class="form-group">
+                    <label>Category *</label>
+                    <input type="text" [(ngModel)]="productForm.category" name="category" required />
+                </div>
+                <div class="form-group">
+                    <label>Price (Rs.) *</label>
+                    <input type="number" [(ngModel)]="productForm.price" name="price" min="0" step="0.01" required />
+                </div>
+                <div class="form-group">
+                    <label>Stock Quantity *</label>
+                    <input type="number" [(ngModel)]="productForm.stock" name="stock" min="0" required />
+                </div>
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" [(ngModel)]="productForm.image" name="image" placeholder="https://..." />
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea [(ngModel)]="productForm.description" name="description" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-success btn-large">
+                    <i class="fas fa-save"></i> Save Product
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

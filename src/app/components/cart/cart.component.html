@@ -1,0 +1,62 @@
+<div class="cart-view">
+    <header class="header">
+        <div class="container">
+            <button class="back-btn" (click)="goBack()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <h1>Shopping Cart</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div *ngIf="cartItems.length > 0">
+            <div class="cart-item" *ngFor="let item of cartItems">
+                <img [src]="item.product.image" [alt]="item.product.name" class="cart-item-image" />
+                <div class="cart-item-details">
+                    <h3 class="cart-item-name">{{ item.product.name }}</h3>
+                    <p class="cart-item-price">Rs. {{ item.product.price }}</p>
+                    <div class="quantity-selector">
+                        <button class="qty-btn" (click)="updateQuantity(item.product.id, item.quantity - 1)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" [value]="item.quantity"
+                            (change)="updateQuantity(item.product.id, +$any($event.target).value)" [min]="1"
+                            [max]="item.product.stock" class="qty-input" />
+                        <button class="qty-btn" (click)="updateQuantity(item.product.id, item.quantity + 1)">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="item-total">Subtotal: Rs. {{ item.product.price * item.quantity }}</p>
+                </div>
+                <button class="btn-remove" (click)="removeItem(item.product.id)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+
+            <div class="cart-summary">
+                <h3>Order Summary</h3>
+                <div class="summary-row">
+                    <span>Items:</span>
+                    <span>{{ cartItems.length }}</span>
+                </div>
+                <div class="summary-row total">
+                    <strong>Total Amount:</strong>
+                    <strong>Rs. {{ totalAmount }}</strong>
+                </div>
+            </div>
+
+            <button class="btn btn-success btn-large" (click)="proceedToCheckout()">
+                Proceed to Checkout <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <div class="empty-state" *ngIf="cartItems.length === 0">
+            <i class="fas fa-shopping-cart"></i>
+            <h2>Your cart is empty</h2>
+            <p>Add some products to get started</p>
+            <button class="btn btn-primary" (click)="goBack()">
+                <i class="fas fa-shopping-bag"></i> Continue Shopping
+            </button>
+        </div>
+    </div>
+</div>
