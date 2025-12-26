@@ -13,6 +13,9 @@ export class CustomerService {
     private customersSubject = new BehaviorSubject<Customer[]>([]);
     public customers$ = this.customersSubject.asObservable();
 
+    private activeCustomerSubject = new BehaviorSubject<Customer | null>(null);
+    public activeCustomer$ = this.activeCustomerSubject.asObservable();
+
     constructor() {
         this.loadCustomers();
     }
@@ -30,6 +33,14 @@ export class CustomerService {
 
     getCustomers(): Customer[] {
         return this.customersSubject.value;
+    }
+
+    setActiveCustomer(customer: Customer | null): void {
+        this.activeCustomerSubject.next(customer);
+    }
+
+    getActiveCustomer(): Customer | null {
+        return this.activeCustomerSubject.value;
     }
 
     // Called when a new order is created to update customer data

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
+import { CustomerService } from '../../services/customer.service';
 import { CartItem } from '../../models/models';
 
 @Component({
@@ -24,6 +25,7 @@ export class CheckoutComponent implements OnInit {
     constructor(
         private cartService: CartService,
         private orderService: OrderService,
+        private customerService: CustomerService,
         private router: Router
     ) { }
 
@@ -33,6 +35,14 @@ export class CheckoutComponent implements OnInit {
 
         if (this.cartItems.length === 0) {
             this.router.navigate(['/']);
+        }
+
+        // Auto-fill active customer details
+        const activeCustomer = this.customerService.getActiveCustomer();
+        if (activeCustomer) {
+            this.customerName = activeCustomer.name;
+            this.customerPhone = activeCustomer.phone;
+            this.customerAddress = activeCustomer.address;
         }
     }
 

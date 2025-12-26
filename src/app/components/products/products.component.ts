@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
-import { Product } from '../../models/models';
+import { CustomerService } from '../../services/customer.service';
+import { Product, Customer } from '../../models/models';
 
 @Component({
     selector: 'app-products',
@@ -17,18 +18,30 @@ export class ProductsComponent implements OnInit {
     products: Product[] = [];
     filteredProducts: Product[] = [];
     categories: string[] = [];
+
     searchTerm: string = '';
     selectedCategory: string = 'all';
+
     cartCount: number = 0;
+    activeCustomer: Customer | null = null;
+
     protected Math = Math;
 
     constructor(
         private productService: ProductService,
         private cartService: CartService,
+        private customerService: CustomerService,
         private router: Router
     ) { }
 
     ngOnInit(): void {
+        // Subscribe to active customer
+        this.customerService.activeCustomer$.subscribe(customer => {
+            this.activeCustomer = customer;
+            // Admin-only check: If no customer is selected, they should probably select one first
+            // But let's keep it flexible for now, maybe they just want to browse
+        });
+
         this.productService.products$.subscribe(products => {
             this.products = products;
             this.filteredProducts = products;

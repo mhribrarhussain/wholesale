@@ -1,0 +1,79 @@
+<div class="dashboard-view">
+    <header class="header header-admin">
+        <div class="container">
+            <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+            <a routerLink="/admin" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Orders
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card revenue">
+                <div class="icon"><i class="fas fa-coins"></i></div>
+                <div class="info">
+                    <h3>Total Revenue</h3>
+                    <p>Rs. {{ totalRevenue | number }}</p>
+                </div>
+            </div>
+            <div class="metric-card profit">
+                <div class="icon"><i class="fas fa-chart-pie"></i></div>
+                <div class="info">
+                    <h3>Total Profit</h3>
+                    <p>Rs. {{ totalProfit | number }}</p>
+                </div>
+            </div>
+            <div class="metric-card orders">
+                <div class="icon"><i class="fas fa-shopping-bag"></i></div>
+                <div class="info">
+                    <h3>Total Orders</h3>
+                    <p>{{ totalOrders }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <!-- Top Products -->
+            <div class="section top-products">
+                <h2><i class="fas fa-trophy"></i> Top Selling Products</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Sold</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let p of topProducts">
+                                <td>{{ p.name }}</td>
+                                <td>{{ p.quantity }}</td>
+                                <td>Rs. {{ p.revenue | number }}</td>
+                            </tr>
+                            <tr *ngIf="topProducts.length === 0">
+                                <td colspan="3" style="text-align: center;">No data available</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="section recent-orders">
+                <h2><i class="fas fa-clock"></i> Recent Orders</h2>
+                <div class="recent-list">
+                    <div class="recent-item" *ngFor="let order of recentOrders">
+                        <div class="recent-info">
+                            <strong>{{ order.customerName }}</strong>
+                            <small>{{ order.orderDate | date:'short' }}</small>
+                        </div>
+                        <span class="amount">Rs. {{ order.totalAmount | number }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -2,11 +2,21 @@
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <h1><i class="fas fa-store"></i> Wholesale Store</h1>
-            <button class="cart-btn" (click)="viewCart()">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="cart-count">{{ cartCount }}</span>
-            </button>
+            <!-- Active Customer Banner -->
+            <div class="active-customer-banner" *ngIf="activeCustomer">
+                <span>Ordering for: <strong>{{ activeCustomer.name }}</strong></span>
+                <button class="change-btn" routerLink="/admin/customers">Change</button>
+            </div>
+
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Wholesale Inv.</h1>
+                </div>
+                <button class="cart-btn" (click)="viewCart()">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">{{ cartCount }}</span>
+                </button>
+            </div>
         </div>
     </header>
 

@@ -23,6 +23,9 @@
                 </div>
                 <div class="customer-footer">
                     <small>Last Order: {{ customer.lastOrderDate | date:'mediumDate' }}</small>
+                    <button class="btn-new-order" (click)="createNewOrder(customer)">
+                        <i class="fas fa-plus-circle"></i> New Order
+                    </button>
                 </div>
             </div>
 

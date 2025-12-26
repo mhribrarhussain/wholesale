@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { CustomerService } from '../../services/customer.service';
 import { Customer } from '../../models/models';
 
@@ -13,11 +14,19 @@ import { Customer } from '../../models/models';
 export class CustomersComponent implements OnInit {
     customers: Customer[] = [];
 
-    constructor(private customerService: CustomerService) { }
+    constructor(
+        private customerService: CustomerService,
+        private router: Router
+    ) { }
 
     ngOnInit(): void {
         this.customerService.customers$.subscribe(customers => {
             this.customers = customers;
         });
+    }
+
+    createNewOrder(customer: Customer): void {
+        this.customerService.setActiveCustomer(customer);
+        this.router.navigate(['/']);
     }
 }

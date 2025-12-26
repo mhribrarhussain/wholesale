@@ -34,6 +34,7 @@ export class AdminComponent implements OnInit {
         name: '',
         category: '',
         price: 0,
+        costPrice: 0,
         stock: 0,
         image: '',
         description: ''
